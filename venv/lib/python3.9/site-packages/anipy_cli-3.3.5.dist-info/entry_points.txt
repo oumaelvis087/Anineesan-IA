@@ -1,0 +1,3 @@
+[console_scripts]
+anipy-cli=anipy_cli.cli:run_cli
+

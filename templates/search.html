@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form action="{{ url_for('search') }}" method="GET" class="d-flex">
+                        <input type="text" name="q" class="form-control me-2" placeholder="Search for anime..." value="{{ request.args.get('q', '') }}">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if results %}
+    <div class="row">
+        {% for anime in results %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ anime.main_picture.medium }}" 
+                     class="card-img-top" 
+                     alt="{{ anime.title }}">
+                <div class="card-body">
+                    <h5 class="card-title text-truncate">{{ anime.title }}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            {% if anime.mean %}
+                                Rating: {{ "%.2f"|format(anime.mean) }}/10
+                            {% else %}
+                                Rating: N/A
+                            {% endif %}
+                        </small>
+                    </p>
+                    {% if anime.synopsis %}
+                    <p class="card-text small">
+                        {{ anime.synopsis }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{{ url_for('watch_anime', anime_id=anime.id) }}" 
+                       class="btn btn-primary btn-sm w-100">Watch Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif request.args.get('q') %}
+    <div class="alert alert-info">
+        No results found for "{{ request.args.get('q') }}". Try a different search term.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

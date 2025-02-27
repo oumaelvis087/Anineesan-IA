@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header with Preferences Link -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="section-header mb-0">Your Recommendations</h1>
+            <p class="text-muted">Personalized anime suggestions based on your preferences</p>
+        </div>
+        <a href="{{ url_for('preferences') }}" class="btn btn-outline-primary">
+            <i class="fas fa-cog me-2"></i>Update Preferences
+        </a>
+    </div>
+    
+    <!-- Personalized Recommendations Section -->
+    {% if personalized_anime %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-header mb-0">Based on Your Preferences</h2>
+            <div class="badge bg-primary p-2">
+                <i class="fas fa-thumbs-up me-1"></i>
+                Matched to your genres
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for anime in personalized_anime %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <div class="anime-card h-100">
+                    <div class="card-cover">
+                        <img src="{{ anime.images.jpg.image_url }}" 
+                             class="card-img-top" 
+                             alt="{{ anime.title }}">
+                        <div class="card-overlay">
+                            <div class="overlay-content">
+                                <div class="mb-3">
+                                    {% if anime.score %}
+                                    <span class="rating-badge">
+                                        <i class="fas fa-star"></i>
+                                        {{ "%.1f"|format(anime.score) }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                   <i class="fas fa-play me-1"></i>Watch Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate" title="{{ anime.title }}">{{ anime.title }}</h5>
+                        <div class="anime-details mb-2">
+                            {% if anime.score %}
+                            <span class="me-2">
+                                <i class="fas fa-star text-warning"></i>
+                                {{ "%.1f"|format(anime.score) }}
+                            </span>
+                            {% endif %}
+                            {% if anime.episodes %}
+                            <span class="me-2">
+                                <i class="fas fa-film text-muted"></i>
+                                {{ anime.episodes }} ep
+                            </span>
+                            {% endif %}
+                            {% if anime.type %}
+                            <span>
+                                <i class="fas fa-tv text-muted"></i>
+                                {{ anime.type }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if anime.synopsis %}
+                        <p class="synopsis">{{ anime.synopsis }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm flex-grow-1">
+                                <i class="fas fa-plus me-1"></i>Add to List
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" title="Add to favorites">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    <!-- Trending Now Section -->
+    <section class="mb-5">
+        <h2 class="section-header mb-4">Trending Now</h2>
+        <div class="row g-4">
+            {% for anime in trending_anime %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <div class="anime-card h-100">
+                    <!-- Same card structure as above -->
+                    <div class="card-cover">
+                        <img src="{{ anime.images.jpg.image_url }}" 
+                             class="card-img-top" 
+                             alt="{{ anime.title }}">
+                        <div class="card-overlay">
+                            <div class="overlay-content">
+                                <div class="mb-3">
+                                    {% if anime.score %}
+                                    <span class="rating-badge">
+                                        <i class="fas fa-star"></i>
+                                        {{ "%.1f"|format(anime.score) }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                   <i class="fas fa-play me-1"></i>Watch Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate" title="{{ anime.title }}">{{ anime.title }}</h5>
+                        <div class="anime-details mb-2">
+                            {% if anime.score %}
+                            <span class="me-2">
+                                <i class="fas fa-star text-warning"></i>
+                                {{ "%.1f"|format(anime.score) }}
+                            </span>
+                            {% endif %}
+                            {% if anime.episodes %}
+                            <span class="me-2">
+                                <i class="fas fa-film text-muted"></i>
+                                {{ anime.episodes }} ep
+                            </span>
+                            {% endif %}
+                            {% if anime.type %}
+                            <span>
+                                <i class="fas fa-tv text-muted"></i>
+                                {{ anime.type }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if anime.synopsis %}
+                        <p class="synopsis">{{ anime.synopsis }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm flex-grow-1">
+                                <i class="fas fa-plus me-1"></i>Add to List
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" title="Add to favorites">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    
+    <!-- Seasonal Anime Section -->
+    <section class="mb-5">
+        <h2 class="section-header mb-4">This Season</h2>
+        <div class="row g-4">
+            {% for anime in seasonal_anime %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <!-- Same card structure as above -->
+                <div class="anime-card h-100">
+                    <div class="card-cover">
+                        <img src="{{ anime.images.jpg.image_url }}" 
+                             class="card-img-top" 
+                             alt="{{ anime.title }}">
+                        <div class="card-overlay">
+                            <div class="overlay-content">
+                                <div class="mb-3">
+                                    {% if anime.score %}
+                                    <span class="rating-badge">
+                                        <i class="fas fa-star"></i>
+                                        {{ "%.1f"|format(anime.score) }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                   <i class="fas fa-play me-1"></i>Watch Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate" title="{{ anime.title }}">{{ anime.title }}</h5>
+                        <div class="anime-details mb-2">
+                            {% if anime.score %}
+                            <span class="me-2">
+                                <i class="fas fa-star text-warning"></i>
+                                {{ "%.1f"|format(anime.score) }}
+                            </span>
+                            {% endif %}
+                            {% if anime.episodes %}
+                            <span class="me-2">
+                                <i class="fas fa-film text-muted"></i>
+                                {{ anime.episodes }} ep
+                            </span>
+                            {% endif %}
+                            {% if anime.type %}
+                            <span>
+                                <i class="fas fa-tv text-muted"></i>
+                                {{ anime.type }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if anime.synopsis %}
+                        <p class="synopsis">{{ anime.synopsis }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm flex-grow-1">
+                                <i class="fas fa-plus me-1"></i>Add to List
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" title="Add to favorites">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

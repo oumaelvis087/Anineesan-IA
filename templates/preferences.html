@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">Anime Preferences</h2>
+                    <form method="POST" action="{{ url_for('preferences') }}">
+                        <!-- Preferred Genres -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Preferred Genres</label>
+                            <div class="row g-2">
+                                {% for genre in genres %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="genres" value="{{ genre }}" id="genre_{{ genre }}"
+                                               {% if user_preferences and genre in user_preferences.preferred_genres.split(',') %}checked{% endif %}>
+                                        <label class="form-check-label" for="genre_{{ genre }}">
+                                            {{ genre }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Minimum Rating -->
+                        <div class="mb-4">
+                            <label for="min_rating" class="form-label fw-bold">Minimum Rating</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="range" class="form-range flex-grow-1" 
+                                       id="min_rating" name="min_rating" 
+                                       min="1" max="10" step="0.5"
+                                       value="{{ user_preferences.min_rating if user_preferences else 7.0 }}"
+                                       oninput="this.nextElementSibling.value = this.value">
+                                <output class="badge bg-primary">{{ user_preferences.min_rating if user_preferences else 7.0 }}</output>
+                            </div>
+                        </div>
+
+                        <!-- Maximum Episodes -->
+                        <div class="mb-4">
+                            <label for="max_episodes" class="form-label fw-bold">Maximum Episodes</label>
+                            <select class="form-select" id="max_episodes" name="max_episodes">
+                                <option value="0" {% if not user_preferences or user_preferences.max_episodes == 0 %}selected{% endif %}>No limit</option>
+                                <option value="12" {% if user_preferences and user_preferences.max_episodes == 12 %}selected{% endif %}>12 episodes</option>
+                                <option value="24" {% if user_preferences and user_preferences.max_episodes == 24 %}selected{% endif %}>24 episodes</option>
+                                <option value="50" {% if user_preferences and user_preferences.max_episodes == 50 %}selected{% endif %}>50 episodes</option>
+                                <option value="100" {% if user_preferences and user_preferences.max_episodes == 100 %}selected{% endif %}>100 episodes</option>
+                            </select>
+                            <div class="form-text">Select the maximum number of episodes you prefer in an anime series</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Preferences
+                            </button>
+                            <a href="{{ url_for('recommendations') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Recommendations
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this script at the end of the file -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltips.map(function (tooltip) {
+        return new bootstrap.Tooltip(tooltip)
+    });
+});
+</script>
+{% endblock %}

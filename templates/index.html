@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center py-5 bg-light">
+            <h1 class="display-4 mb-4">Welcome to Anineesan</h1>
+            <p class="lead">Your ultimate anime streaming destination</p>
+            {% if not current_user.is_authenticated %}
+                <div class="mt-4">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg mx-2">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg mx-2">Register</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Trending Anime Section -->
+            <section class="mb-5">
+                <h2 class="mb-4">Trending Now</h2>
+                <div class="row">
+                    {% for anime in trending_anime %}
+                    <div class="col-sm-6 col-lg-4 col-xl-3 mb-4">
+                        <div class="anime-card h-100">
+                            <div class="card-cover">
+                                <img src="{{ anime.images.jpg.image_url }}" 
+                                     class="card-img-top" 
+                                     alt="{{ anime.title }}">
+                                <div class="card-overlay">
+                                    <div class="overlay-content">
+                                        <div class="mb-3">
+                                            {% if anime.score %}
+                                            <span class="rating-badge">
+                                                <i class="fas fa-star"></i>
+                                                {{ "%.1f"|format(anime.score) }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                           <i class="fas fa-play me-1"></i>Watch Now
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate" title="{{ anime.title }}">{{ anime.title }}</h5>
+                                <div class="anime-details mb-2">
+                                    {% if anime.score %}
+                                    <span class="me-2">
+                                        <i class="fas fa-star text-warning"></i>
+                                        {{ "%.1f"|format(anime.score) }}
+                                    </span>
+                                    {% endif %}
+                                    {% if anime.episodes %}
+                                    <span class="me-2">
+                                        <i class="fas fa-film text-muted"></i>
+                                        {{ anime.episodes }} ep
+                                    </span>
+                                    {% endif %}
+                                    {% if anime.type %}
+                                    <span>
+                                        <i class="fas fa-tv text-muted"></i>
+                                        {{ anime.type }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% if anime.synopsis %}
+                                <p class="synopsis">{{ anime.synopsis }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm flex-grow-1">
+                                        <i class="fas fa-plus me-1"></i>Add to List
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" title="Add to favorites">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Recent Recommendations Section -->
+            <section class="mb-5">
+                <h2 class="mb-4">Recent Recommendations</h2>
+                <div class="row">
+                    {% for rec in recent_recommendations[:6] %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="{{ rec.source_anime.image_url }}" 
+                                         class="img-fluid rounded-start" 
+                                         alt="{{ rec.source_anime.title }}">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate">{{ rec.source_anime.title }}</h5>
+                                        <p class="card-text">
+                                            <small class="text-muted">Recommended with:</small><br>
+                                            <strong>{{ rec.recommended_anime.title }}</strong>
+                                        </p>
+                                        {% if rec.recommendation_text %}
+                                        <p class="card-text">
+                                            <small>{{ rec.recommendation_text[:100] }}...</small>
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- User Profile Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Your Profile</h3>
+                    {% if current_user.is_authenticated %}
+                        <p>Welcome back, <strong>{{ current_user.username }}</strong>!</p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('recommendations') }}" 
+                               class="btn btn-success">View Your Recommendations</a>
+                            <a href="{{ url_for('search') }}" 
+                               class="btn btn-outline-primary">Search Anime</a>
+                        </div>
+                    {% else %}
+                        <p>Login to get personalized recommendations!</p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('login') }}" 
+                               class="btn btn-primary">Login</a>
+                            <a href="{{ url_for('register') }}" 
+                               class="btn btn-outline-primary">Register</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title h5">Quick Stats</h3>
+                    <div class="list-group list-group-flush">
+                        {% if current_user.is_authenticated %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Watched Anime
+                                <span class="badge bg-primary rounded-pill">{{ current_user.watch_history|length }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Available Anime
+                            <span class="badge bg-success rounded-pill">{{ trending_anime|length }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Recent Recommendations
+                            <span class="badge bg-info rounded-pill">{{ recent_recommendations|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

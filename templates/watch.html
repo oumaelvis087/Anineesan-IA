@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{ anime.title }} - Episode {{ current_episode }}</h2>
+                    <div class="video-container mb-4">
+                        <video id="anime-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" width="100%" height="500">
+                            <source src="{{ stream_url }}" type="application/x-mpegURL">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <div class="episode-controls mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-primary" {% if current_episode <= 1 %}disabled{% endif %}
+                                onclick="changeEpisode({{ current_episode - 1 }})">
+                                Previous Episode
+                            </button>
+                            <div class="episode-selector">
+                                <select class="form-select" onchange="changeEpisode(this.value)">
+                                    {% for ep in range(1, anime.total_episodes + 1) %}
+                                    <option value="{{ ep }}" {% if ep == current_episode %}selected{% endif %}>
+                                        Episode {{ ep }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" {% if current_episode >= anime.total_episodes %}disabled{% endif %}
+                                onclick="changeEpisode({{ current_episode + 1 }})">
+                                Next Episode
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if current_user.is_authenticated %}
+                    <div class="rating-section mt-4">
+                        <h4>Rate this Anime</h4>
+                        <form method="POST" action="{{ url_for('rate_anime', anime_id=anime.gogoanime_id) }}">
+                            <div class="rating">
+                                {% for i in range(1, 11) %}
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}">
+                                <label for="star{{ i }}">{{ i }}</label>
+                                {% endfor %}
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Submit Rating</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Anime Details</h3>
+                    <img src="{{ anime.image_url }}" class="img-fluid mb-3" alt="{{ anime.title }}">
+                    <p><strong>Rating:</strong> {{ anime.rating|default('Not rated yet', true) }}</p>
+                    <p><strong>Genres:</strong> {{ anime.genres }}</p>
+                    <p><strong>Total Episodes:</strong> {{ anime.total_episodes }}</p>
+                    {% if current_user.is_authenticated %}
+                    <button class="btn btn-success btn-block w-100 mb-2" onclick="addToWatchlist()">Add to Watch List</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% extends "base.html" %}
+
+{% block title %}Watch {{ anime.title }}{% endblock %}
+
+{% block content %}
+<div class="container watch-container">
+    <div class="row">
+        <div class="col-md-8">
+            {% if streaming_url %}
+            <div class="video-container mb-4">
+                <iframe src="{{ streaming_url }}" 
+                        allowfullscreen="true" 
+                        frameborder="0"
+                        width="100%"
+                        height="500px">
+                </iframe>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                Streaming source not available. Try checking external sources.
+            </div>
+            {% endif %}
+            
+            <div class="episode-controls d-flex justify-content-between align-items-center mb-4">
+                <button class="btn btn-primary" 
+                        {% if current_episode <= 1 %}disabled{% endif %}
+                        onclick="changeEpisode({{ current_episode - 1 }})">
+                    Previous Episode
+                </button>
+                <span class="episode-counter">
+                    Episode {{ current_episode }} / {{ total_episodes }}
+                </span>
+                <button class="btn btn-primary" 
+                        {% if current_episode >= total_episodes %}disabled{% endif %}
+                        onclick="changeEpisode({{ current_episode + 1 }})">
+                    Next Episode
+                </button>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="anime-info-card">
+                <img src="{{ anime.main_picture.medium }}" alt="{{ anime.title }}" class="img-fluid mb-3">
+                <h2>{{ anime.title }}</h2>
+                <div class="rating-section mb-3">
+                    <h4>Rate this Anime</h4>
+                    <form action="{{ url_for('rate_anime', anime_id=anime.id) }}" method="POST" class="rating-form">
+                        <div class="rating-stars">
+                            {% for i in range(1, 11) %}
+                            <i class="fas fa-star rating-star {% if user_rating and i <= user_rating %}active{% endif %}"
+                               data-rating="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="rating" id="rating-value" value="{{ user_rating or '' }}">
+                        <button type="submit" class="btn btn-primary mt-2">Submit Rating</button>
+                    </form>
+                </div>
+                <div class="anime-details">
+                    <p><strong>Score:</strong> {{ "%.2f"|format(anime.mean or 0) }}</p>
+                    <p><strong>Episodes:</strong> {{ anime.num_episodes }}</p>
+                    <p><strong>Genres:</strong> 
+                        {% for genre in anime.genres %}
+                        <span class="badge bg-secondary">{{ genre.name }}</span>
+                        {% endfor %}
+                    </p>
+                    <p class="synopsis">{{ anime.synopsis }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeEpisode(episode) {
+    if (episode < 1 || episode > {{ total_episodes }}) return;
+    
+    fetch(`/update_episode/{{ anime.id }}/${episode}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update episode. Please try again.');
+        });
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script>
+    let player = videojs('anime-player');
+    
+    function changeEpisode(episode) {
+        // Save current time in case of error
+        const currentTime = player.currentTime();
+        
+        // Update the URL without reloading the page
+        const url = new URL(window.location.href);
+        url.searchParams.set('episode', episode);
+        window.history.pushState({}, '', url);
+        
+        // Update the episode on the server
+        fetch(`/update_episode/{{ anime.gogoanime_id }}/${episode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to get the new episode
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating episode:', error);
+                player.currentTime(currentTime);
+            });
+    }
+    
+    // Save watching progress periodically
+    setInterval(() => {
+        if (player && !player.paused()) {
+            const currentTime = player.currentTime();
+            localStorage.setItem(`anime_{{ anime.gogoanime_id }}_ep_{{ current_episode }}`, currentTime);
+        }
+    }, 5000);
+    
+    // Restore watching progress
+    window.addEventListener('load', () => {
+        const savedTime = localStorage.getItem(`anime_{{ anime.gogoanime_id }}_ep_{{ current_episode }}`);
+        if (savedTime) {
+            player.currentTime(parseFloat(savedTime));
+        }
+    });
+    
+    function addToWatchlist() {
+        fetch(`/add_to_watchlist/{{ anime.gogoanime_id }}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Added to watchlist!');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+{% endblock %}
