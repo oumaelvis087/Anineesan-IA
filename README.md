@@ -15,7 +15,7 @@ Anineesan is a Python-based anime recommendation system that provides personaliz
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/oumaelvis087/Anineesan-IA](https://github.com/oumaelvis087/Anineesan-IA)
+git clone https://github.com/oumaelvis087/Anineesan-IA
 cd anineesan
 ```
 
